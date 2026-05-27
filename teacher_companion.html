@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>교사 동행 · 공과 지도와 아이 이해 도우미</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef1ee; --bg-2: #e3e8e3; --card: #fbfcfb;
+    --ink: #25292a; --ink-soft: #5f6766; --ink-faint: #909896;
+    --line: #d3dad6; --pine: #3a5f4e; --pine-deep: #2c4a3c;
+    --wheat: #bf9442; --clay: #a96849; --sky: #4d7a92;
+    --shadow: rgba(34, 44, 38, 0.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif; background: var(--bg);
+    color: var(--ink); line-height: 1.7; -webkit-tap-highlight-color: transparent;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 50% 35% at 15% 0%, rgba(58,95,78,0.10), transparent),
+      radial-gradient(ellipse 45% 30% at 88% 6%, rgba(191,148,66,0.09), transparent);
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 18px 90px; position: relative; z-index: 1; }
+  header { text-align: center; padding: 46px 14px 22px; }
+  .eyebrow {
+    font-family: 'Gowun Batang', serif; font-size: 0.9rem;
+    letter-spacing: 0.26em; color: var(--wheat); margin-bottom: 8px;
+  }
+  h1 { font-family: 'Gowun Batang', serif; font-size: 2.6rem; font-weight: 700; }
+  .tagline { color: var(--ink-soft); font-size: 0.98rem; margin-top: 6px; }
+  .tabs {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 26px 0 24px;
+  }
+  .tab {
+    font-family: 'Gowun Batang', serif; font-size: 1.02rem; padding: 10px 24px;
+    border: 1.5px solid var(--line); border-radius: 10px; background: var(--card);
+    color: var(--ink-soft); cursor: pointer; transition: all 0.16s;
+  }
+  .tab:hover { border-color: var(--pine); color: var(--ink); }
+  .tab.active { background: var(--pine); color: #fff; border-color: var(--pine); }
+  .panel { display: none; }
+  .panel.active { display: block; animation: fade 0.35s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .intro {
+    background: var(--bg-2); border-left: 3px solid var(--wheat); border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; color: var(--ink-soft);
+  }
+  .intro b { color: var(--pine-deep); }
+  .section-title {
+    font-family: 'Gowun Batang', serif; font-size: 1.05rem; color: var(--ink);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::before { content: ""; width: 16px; height: 2px; background: var(--wheat); }
+  .case-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px; margin-bottom: 10px;
+  }
+  .case-card {
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 15px 16px; cursor: pointer; transition: all 0.15s; text-align: left;
+  }
+  .case-card:hover {
+    transform: translateY(-3px); border-color: var(--pine); box-shadow: 0 5px 14px var(--shadow);
+  }
+  .case-card.active { background: var(--pine); border-color: var(--pine); }
+  .case-card.active .cc-title { color: #fff; }
+  .case-card.active .cc-sub { color: #cdd8d0; }
+  .cc-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .cc-title { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
+  .cc-sub { font-size: 0.82rem; color: var(--ink-soft); }
+  .result {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    margin-top: 20px; overflow: hidden; box-shadow: 0 3px 12px var(--shadow); display: none;
+  }
+  .result.show { display: block; animation: fade 0.4s ease; }
+  .result-head { background: var(--pine); color: #fff; padding: 14px 22px; }
+  .result-head .rh-tag { font-size: 0.78rem; letter-spacing: 0.1em; color: #aebfb4; }
+  .result-head .rh-title { font-family: 'Gowun Batang', serif; font-size: 1.3rem; margin-top: 2px; }
+  .result-body { padding: 8px 22px 18px; }
+  .block { padding: 16px 0; border-bottom: 1px dashed var(--line); }
+  .block:last-child { border-bottom: none; }
+  .block-label {
+    font-family: 'Gowun Batang', serif; font-size: 0.96rem; color: var(--pine-deep);
+    margin-bottom: 8px; font-weight: 700; display: flex; align-items: center; gap: 7px;
+  }
+  .block-label .num {
+    background: var(--wheat); color: #fff; width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; flex-shrink: 0;
+  }
+  .block p { margin-bottom: 8px; font-size: 0.96rem; }
+  .block p:last-child { margin-bottom: 0; }
+  .block ul { margin: 4px 0 0 4px; list-style: none; }
+  .block li { padding: 5px 0 5px 20px; position: relative; font-size: 0.95rem; }
+  .block li::before {
+    content: ""; position: absolute; left: 2px; top: 13px;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--pine);
+  }
+  .mind {
+    background: linear-gradient(135deg, #f3f6f3, #e7efe9); padding: 16px 22px;
+    font-size: 0.93rem; color: var(--ink-soft);
+  }
+  .mind b { color: var(--pine-deep); font-family: 'Gowun Batang', serif; }
+  .principle {
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 20px; margin-top: 22px; font-size: 0.87rem; color: var(--ink-soft);
+  }
+  .principle b { color: var(--pine-deep); font-family: 'Gowun Batang', serif; }
+  .placeholder { text-align: center; padding: 44px 20px; color: var(--ink-faint); }
+  .placeholder .big { font-size: 2.2rem; margin-bottom: 8px; }
+  footer {
+    text-align: center; margin-top: 40px; padding-top: 20px;
+    border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 0.84rem;
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 2.1rem; }
+    .case-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 400px) { .case-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">TEACHER COMPANION</div>
+    <h1>교사 동행</h1>
+    <p class="tagline">공과 지도와 아이 이해를 함께 고민하는 사역 도우미</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-panel="lesson">공과 지도</button>
+    <button class="tab" data-panel="child">아이 대하기</button>
+  </div>
+
+  <div class="panel active" id="panel-lesson">
+    <div class="intro">
+      공과 본문은 종류마다 가르치는 길이 다릅니다. <b>어떤 본문을 가르치시나요?</b>
+      본문 유형을 고르면, 그 본문을 청소년에게 어떻게 열고 · 질문하고 · 삶으로 이을지 안내해 드려요.
+    </div>
+    <div class="section-title">본문 유형을 골라보세요</div>
+    <div class="case-grid" id="lesson-grid"></div>
+    <div class="result" id="lesson-result">
+      <div class="result-head">
+        <div class="rh-tag">공과 지도</div>
+        <div class="rh-title" id="lr-title"></div>
+      </div>
+      <div class="result-body" id="lr-body"></div>
+      <div class="mind" id="lr-mind"></div>
+    </div>
+    <div class="placeholder" id="lesson-ph">
+      <div class="big">📖</div>위에서 본문 유형을 고르면 지도 방향이 열려요.
+    </div>
+  </div>
+
+  <div class="panel" id="panel-child">
+    <div class="intro">
+      마음이 쓰이는 아이가 있나요? 비슷한 상황을 골라보세요.
+      <b>아이를 유형으로 규정하기 위한 것이 아니라</b>, 그 아이를 더 깊이 이해하고
+      먼저 다가가도록 돕기 위한 것입니다. 같은 모습도 아이마다 이유가 다릅니다.
+    </div>
+    <div class="section-title">비슷한 상황을 골라보세요</div>
+    <div class="case-grid" id="child-grid"></div>
+    <div class="result" id="child-result">
+      <div class="result-head">
+        <div class="rh-tag">아이 대하기</div>
+        <div class="rh-title" id="cr-title"></div>
+      </div>
+      <div class="result-body" id="cr-body"></div>
+      <div class="mind" id="cr-mind"></div>
+    </div>
+    <div class="placeholder" id="child-ph">
+      <div class="big">🌱</div>위에서 상황을 고르면 함께 고민한 이야기가 열려요.
+    </div>
+    <div class="principle">
+      <b>이 도구를 쓰는 마음가짐</b><br>
+      여기 담긴 이야기는 아이를 규정하는 진단서가 아닙니다. 하나의 시선일 뿐이에요.
+      이것을 참고하되, 그 아이를 직접 만나 눈을 맞추고 이야기를 들어주세요.
+      도구는 선생님의 사랑을 대신할 수 없고, 다만 거들 뿐입니다.
+      그리고 아이에게서 위기 신호(자해, 학대, 깊은 우울 등)가 느껴진다면
+      혼자 감당하려 하지 마시고 담당 교역자·부모님과 꼭 함께 의논하세요.
+    </div>
+  </div>
+
+  <footer>교사 동행 — 청소년부 교사를 위한 사역 도우미</footer>
+</div>
+<script>
+// ============================================
+// 공과 지도 데이터 — 본문 유형별
+// ============================================
+const LESSON_CASES = [
+  {
+    icon: '📜', title: '이야기 본문', sub: '사건·내러티브 (출애굽, 다윗)',
+    blocks: [
+      { label: '이렇게 열어보세요', type: 'p', items: [
+        '이야기는 「설명」이 아니라 「경험」으로 들어가야 합니다. 줄거리를 요약해 던지지 말고, 학생이 그 장면 속에 서 보게 하세요.',
+        '"네가 그 자리에 있었다면 무엇을 보고 들었을까?" 한 문장이면 충분히 문이 열립니다.'
+      ]},
+      { label: '함께 나눌 질문', type: 'ul', items: [
+        '이 이야기에서 하나님은 어떤 분으로 나타나시나요? (인물이 아니라 하나님께 초점)',
+        '등장인물은 어떤 선택을 했고, 그 결과는 무엇이었나요?',
+        '이 이야기가 「나에게」 들려주는 한 가지는 무엇일까요?'
+      ]},
+      { label: '삶으로 잇기', type: 'p', items: [
+        '이야기의 교훈을 도덕적 결론("그러니 착하게 살자")으로 끝내지 마세요. 그 사건 속에서 일하신 하나님이 「지금 우리 삶에서도」 동일하게 일하신다는 데로 이어가야 합니다.',
+        '개혁주의의 시선: 성경의 모든 이야기는 결국 그리스도와 그분의 구원을 가리킵니다.'
+      ]}
+    ],
+    mind: '이야기 본문의 주인공은 다윗도 모세도 아닌 하나님이십니다. 학생이 「인물처럼 되자」가 아니라 「이런 하나님을 만나자」로 나아가게 도와주세요.'
+  },
+  {
+    icon: '🌾', title: '비유', sub: '예수님의 비유 (탕자, 씨 뿌리는 자)',
+    blocks: [
+      { label: '이렇게 열어보세요', type: 'p', items: [
+        '비유는 일상의 그림으로 천국의 진리를 보여줍니다. 먼저 그 그림(농사, 양, 잔치)을 학생이 생생히 떠올리게 하세요.',
+        '비유는 보통 「하나의 핵심」을 향합니다. 모든 요소에 의미를 억지로 붙이지 마세요.'
+      ]},
+      { label: '함께 나눌 질문', type: 'ul', items: [
+        '이 비유에서 가장 뜻밖이거나 이상한 부분은 어디인가요? (그곳에 핵심이 있을 때가 많습니다)',
+        '예수님은 이 비유로 듣는 이들에게 무엇을 깨우치려 하셨을까요?',
+        '나는 이 비유 속 어떤 인물에 가장 가까운가요?'
+      ]},
+      { label: '삶으로 잇기', type: 'p', items: [
+        '비유는 듣는 이의 마음을 「찔러」 결단하게 합니다. 설명으로 끝내지 말고, "그렇다면 나는?"이라는 질문 앞에 학생을 세워주세요.',
+        '개혁주의의 시선: 비유는 우리의 의로움이 아니라 하나님 나라의 은혜를 드러냅니다.'
+      ]}
+    ],
+    mind: '탕자의 비유의 핵심은 「돌아온 아들」보다 「기다리신 아버지」입니다. 비유의 초점을 인간의 행동이 아니라 하나님의 은혜에 맞춰주세요.'
+  },
+  {
+    icon: '📖', title: '교리·서신', sub: '바울서신, 교리적 본문',
+    blocks: [
+      { label: '이렇게 열어보세요', type: 'p', items: [
+        '교리 본문은 추상적으로 느껴지기 쉽습니다. 먼저 그 교리가 「대답하는 질문」이 무엇인지 짚어주세요. (예: 칭의 → "나는 어떻게 하나님 앞에 설 수 있나?")',
+        '교리는 차가운 지식이 아니라, 한 사람을 살리는 진리입니다.'
+      ]},
+      { label: '함께 나눌 질문', type: 'ul', items: [
+        '이 본문이 말하는 진리를 한 문장으로 말한다면?',
+        '이 진리를 모른다면, 우리 신앙에 어떤 일이 생길까요?',
+        '이 진리는 내가 힘들 때 어떤 위로가 되나요?'
+      ]},
+      { label: '삶으로 잇기', type: 'p', items: [
+        '교리를 외우게 하지 말고, 그 교리가 주는 「안도」와 「확신」을 느끼게 하세요. 좋은 교리 교육은 마음을 따뜻하게 합니다.',
+        '개혁주의의 시선: 교리는 하나님이 어떤 분인지, 그분이 우리를 위해 무엇을 하셨는지를 또렷이 보게 합니다.'
+      ]}
+    ],
+    mind: '교리는 시험 범위가 아니라 신앙의 뼈대입니다. "이걸 알면 신앙이 흔들릴 때 무엇을 붙들 수 있는지" 그 유익을 보여주세요.'
+  },
+  {
+    icon: '🎵', title: '시편·지혜서', sub: '시편, 잠언, 전도서',
+    blocks: [
+      { label: '이렇게 열어보세요', type: 'p', items: [
+        '시편은 「가르침」이기 전에 「기도와 노래」입니다. 분석하기 전에, 먼저 그 정서(탄식·기쁨·신뢰)를 함께 느껴보세요.',
+        '천천히 소리 내어 함께 읽는 것만으로도 시편은 열립니다.'
+      ]},
+      { label: '함께 나눌 질문', type: 'ul', items: [
+        '이 시를 쓴 사람은 지금 어떤 마음 상태일까요?',
+        '그는 그 마음을 가지고 하나님께 어떻게 나아가나요?',
+        '나도 이런 마음이었던 때가 있나요? 언제였나요?'
+      ]},
+      { label: '삶으로 잇기', type: 'p', items: [
+        '시편은 학생에게 「솔직한 기도」를 가르칩니다. 슬픔도 분노도 하나님께 가지고 갈 수 있다는 것 — 이것이 시편의 큰 선물입니다.',
+        '개혁주의의 시선: 시편은 우리의 모든 감정을 하나님 앞에서 정직하게 다루는 법을 보여줍니다.'
+      ]}
+    ],
+    mind: '시편 본문은 학생이 「나도 이렇게 기도해도 되는구나」를 느끼면 충분합니다. 멋진 해석보다 정직한 공감이 먼저입니다.'
+  },
+  {
+    icon: '⚖️', title: '율법·명령', sub: '계명, 윤리적 가르침',
+    blocks: [
+      { label: '이렇게 열어보세요', type: 'p', items: [
+        '명령 본문을 「하지 마라」의 목록으로 시작하면 학생은 닫힙니다. 먼저 그 명령이 「어떤 사랑에서 나왔는지」를 보게 하세요.',
+        '계명은 우리를 옭아매려는 것이 아니라, 잘 살게 하시려는 하나님의 선물입니다.'
+      ]},
+      { label: '함께 나눌 질문', type: 'ul', items: [
+        '이 명령은 우리를 무엇으로부터 지켜주려는 걸까요?',
+        '이 명령이 잘 지켜지는 공동체는 어떤 모습일까요?',
+        '이 명령을 지키는 것이 어려운 이유는 무엇일까요?'
+      ]},
+      { label: '삶으로 잇기', type: 'p', items: [
+        '명령을 지키라고 다그치기보다, 우리 힘으로는 다 지킬 수 없음을 정직하게 인정하고 — 그래서 은혜가 필요함을 함께 깨닫게 하세요.',
+        '개혁주의의 시선: 율법은 우리를 그리스도께로 인도하는 몽학선생입니다. 명령은 우리의 부족함과 은혜의 필요를 함께 보여줍니다.'
+      ]}
+    ],
+    mind: '명령 본문의 결론이 「더 노력하자」가 되면 율법주의로 흐릅니다. 「은혜 안에서 순종하고 싶어지는 마음」으로 이어가 주세요.'
+  },
+  {
+    icon: '✝️', title: '예수님의 생애', sub: '복음서의 사건·말씀',
+    blocks: [
+      { label: '이렇게 열어보세요', type: 'p', items: [
+        '복음서를 다룰 때는 예수님이 「누구를」 만나셨고 「어떻게」 대하셨는지에 주목하게 하세요. 그분의 태도 하나하나가 복음입니다.',
+        '학생이 그 장면에서 예수님의 눈빛과 음성을 상상해보게 하면 본문이 살아납니다.'
+      ]},
+      { label: '함께 나눌 질문', type: 'ul', items: [
+        '예수님은 이 사람을 어떻게 대하셨나요? 그 모습에서 무엇이 느껴지나요?',
+        '사람들은 예수님께 어떻게 반응했나요?',
+        '예수님이 지금 나를 만나신다면, 어떤 말씀을 하실 것 같나요?'
+      ]},
+      { label: '삶으로 잇기', type: 'p', items: [
+        '복음서의 목표는 정보 전달이 아니라 「예수님을 사랑하게 되는 것」입니다. 학생이 그분께 마음이 끌리도록 도와주세요.',
+        '개혁주의의 시선: 복음서의 모든 장면은 그리스도가 우리의 유일한 구원자이심을 드러냅니다.'
+      ]}
+    ],
+    mind: '복음서 공과가 끝났을 때 학생의 마음에 「예수님이 참 좋으시다」가 남으면, 그 공과는 성공한 것입니다.'
+  }
+];
+
+// ============================================
+// 아이 대하기 데이터 — 상황별
+// ============================================
+const CHILD_CASES = [
+  {
+    icon: '😴', title: '수업 중 엎드려요', sub: '의욕 없어 보이는 아이',
+    blocks: [
+      { label: '먼저, 이렇게 볼 수 있어요', type: 'ul', items: [
+        '단순한 피곤일 수 있습니다 — 학원, 늦은 잠, 입시 압박. 청소년의 몸은 정말로 지쳐 있을 때가 많습니다.',
+        '마음의 신호일 수 있습니다 — 공과가 어렵거나, 소속감이 없거나, 무언가 힘든 일이 있을 수 있습니다.',
+        '엎드림이 「거부」가 아니라 「여기 있고는 싶은데 버거움」의 표현일 수도 있습니다.'
+      ]},
+      { label: '다가가는 한 걸음', type: 'ul', items: [
+        '수업 중 지적하지 마세요. 끝나고 조용히 "오늘 많이 피곤했나 보다" 하고 가볍게 말 걸어보세요.',
+        '다음 주에 작은 역할 하나(본문 읽기, 기도 제목 나누기)를 맡겨, 「네가 필요하다」는 느낌을 주세요.',
+        '한 주만 보지 말고 몇 주를 지켜봐 주세요. 패턴이 계속되면 따로 시간을 내어 마음을 물어보세요.'
+      ]},
+      { label: '선생님의 결을 살려서', type: 'p', items: [
+        '활기찬 선생님이라면: 억지로 끌어올리려 하기보다, 잠시 그 아이의 낮은 에너지에 맞춰 조용히 곁에 있어 주세요.',
+        '차분한 선생님이라면: 그 조용한 다가감이 이 아이에게는 가장 편안할 수 있습니다. 짧은 한 마디면 충분합니다.'
+      ]}
+    ],
+    mind: '엎드린 아이를 「의욕 없는 아이」로 규정하지 마세요. 그저 오늘 지쳤을 뿐인지도 모릅니다. 깨우기보다, 안전하다고 느끼게 해주세요.'
+  },
+  {
+    icon: '🤐', title: '말이 거의 없어요', sub: '나눔 시간에 입을 닫는 아이',
+    blocks: [
+      { label: '먼저, 이렇게 볼 수 있어요', type: 'ul', items: [
+        '말이 없는 것과 마음이 닫힌 것은 다릅니다. 조용히 「듣고 있는」 아이도 많습니다.',
+        '틀린 답을 할까 봐 두렵거나, 아직 이 모임이 안전하게 느껴지지 않는 것일 수 있습니다.',
+        '말로 표현하는 것이 원래 어려운 기질일 수도 있습니다 — 이것은 고쳐야 할 문제가 아닙니다.'
+      ]},
+      { label: '다가가는 한 걸음', type: 'ul', items: [
+        '"네 생각은?"이라고 갑자기 지목하지 마세요. 부담이 큽니다.',
+        '「정답이 없는 질문」부터 던져보세요. ("이 중 어떤 게 제일 마음에 와?") 고르기만 하면 되니 입을 떼기 쉽습니다.',
+        '글로 쓰게 하거나, 짝과 먼저 나누게 한 뒤 전체로 — 작은 단위부터 말문을 열어주세요.',
+        '한 마디라도 했을 때 "그렇게 생각했구나" 하고 따뜻하게 받아주면, 다음이 쉬워집니다.'
+      ]},
+      { label: '선생님의 결을 살려서', type: 'p', items: [
+        '활기찬 선생님이라면: 침묵을 못 견뎌 대신 말해주지 마세요. 3초만 더 기다려주면 아이가 입을 열 공간이 생깁니다.',
+        '차분한 선생님이라면: 선생님의 차분함이 이 아이에겐 큰 안심입니다. 조급해하지 마세요.'
+      ]}
+    ],
+    mind: '말이 없는 아이를 「소극적인 아이」로 규정하지 마세요. 모든 아이가 말로 신앙을 표현할 필요는 없습니다. 침묵 속에서도 자라는 믿음이 있습니다.'
+  },
+  {
+    icon: '🌀', title: '산만하고 장난이 많아요', sub: '집중을 어려워하는 아이',
+    blocks: [
+      { label: '먼저, 이렇게 볼 수 있어요', type: 'ul', items: [
+        '에너지가 많은 것은 잘못이 아닙니다. 그 에너지가 쓰일 자리를 못 찾았을 뿐일 수 있습니다.',
+        '관심받고 싶은 마음의 표현일 수 있습니다 — 장난은 때로 「나를 봐 달라」는 신호입니다.',
+        '공과 내용이 너무 길거나, 앉아서 듣기만 하는 방식이 이 아이에겐 버거운 것일 수 있습니다.'
+      ]},
+      { label: '다가가는 한 걸음', type: 'ul', items: [
+        '혼내는 것은 잠깐 효과가 있을 뿐, 관계를 깎습니다. 대신 그 에너지에 「할 일」을 주세요.',
+        '도움이 필요한 역할(자료 나눠주기, 활동 시범)을 맡기면, 산만함이 기여로 바뀝니다.',
+        '공과 중간에 몸을 쓰는 활동이나 짧은 전환을 넣어, 앉아 있는 시간을 잘게 나눠주세요.',
+        '잘했을 때 그 순간을 놓치지 말고 짚어주세요. 야단보다 인정이 이 아이를 바꿉니다.'
+      ]},
+      { label: '선생님의 결을 살려서', type: 'p', items: [
+        '차분한 선생님이라면: 이 아이의 에너지에 압도되지 마세요. 선생님의 일관된 침착함이 오히려 아이에게 안정의 기준이 됩니다.',
+        '활기찬 선생님이라면: 죽이 잘 맞을 수 있지만, 둘 다 들뜨지 않도록 활동과 차분함의 리듬을 잡아주세요.'
+      ]}
+    ],
+    mind: '산만한 아이를 「문제아」로 규정하지 마세요. 그 에너지는 잘 인도되면 공동체에 생기를 주는 귀한 선물이 됩니다.'
+  },
+  {
+    icon: '🧍', title: '친구들과 잘 못 어울려요', sub: '겉도는 듯한 아이',
+    blocks: [
+      { label: '먼저, 이렇게 볼 수 있어요', type: 'ul', items: [
+        '혼자 있는 것을 「편해서」 택하는 아이도 있고, 「끼고 싶은데 방법을 몰라」 혼자인 아이도 있습니다. 둘은 다릅니다.',
+        '새로 왔거나, 다른 학교라서 아직 연결고리가 없는 것일 수 있습니다.',
+        '한 번의 어색한 경험 이후 위축된 것일 수도 있습니다.'
+      ]},
+      { label: '다가가는 한 걸음', type: 'ul', items: [
+        '"친구 좀 사귀어라" 같은 말은 부담만 됩니다. 대신 자연스러운 연결의 자리를 만들어주세요.',
+        '짝 활동이나 소그룹을 짤 때, 마음 따뜻한 아이와 같은 조로 슬며시 묶어주세요.',
+        '그 아이의 작은 강점(그림, 유머, 성실함)을 공동체 앞에서 자연스럽게 드러내 주면, 다른 아이들이 다가갈 틈이 생깁니다.',
+        '선생님이 먼저 그 아이의 친구가 되어주세요. 어른 한 명의 관심이 큰 안전기지가 됩니다.'
+      ]},
+      { label: '선생님의 결을 살려서', type: 'p', items: [
+        '다정한 선생님이라면: 그 따뜻함으로 먼저 다가가되, 아이를 「불쌍한 아이」로 대하지 않도록 조심하세요.',
+        '원칙을 중시하는 선생님이라면: "다 같이 어울려야 한다"는 규칙으로 밀어붙이지 말고, 관계는 천천히 자란다는 것을 기억해주세요.'
+      ]}
+    ],
+    mind: '겉도는 듯한 아이를 「사회성 부족」으로 규정하지 마세요. 그 아이에게 필요한 건 평가가 아니라, 안전하게 연결될 다리 하나입니다.'
+  },
+  {
+    icon: '🌧️', title: '갑자기 달라졌어요', sub: '평소와 다른 모습을 보이는 아이',
+    blocks: [
+      { label: '먼저, 이렇게 볼 수 있어요', type: 'ul', items: [
+        '밝던 아이가 어두워졌거나, 활발하던 아이가 조용해졌다면 — 그 변화 자체가 중요한 신호입니다.',
+        '가정의 변화, 친구 관계의 상처, 학업 부담, 또는 우리가 모르는 어떤 일이 있을 수 있습니다.',
+        '원인을 추측해 단정하지 마세요. 지금 필요한 것은 「진단」이 아니라 「관심」입니다.'
+      ]},
+      { label: '다가가는 한 걸음', type: 'ul', items: [
+        '캐묻지 마세요. 대신 "요즘 너 좀 달라 보여서, 선생님이 마음이 쓰여" 하고 「보고 있다」는 것만 전해주세요.',
+        '말할 준비가 안 된 아이를 다그치지 말고, "언제든 이야기하고 싶으면 선생님이 있어"라고 문을 열어두세요.',
+        '문자나 짧은 안부로 꾸준히 「잊지 않았다」는 신호를 보내주세요.',
+        '변화가 깊고 오래간다면(무기력, 고립, 자기 비하 등) 반드시 담당 교역자·부모님과 의논하세요.'
+      ]},
+      { label: '특별히 주의할 것', type: 'p', items: [
+        '자해의 흔적, 죽음에 대한 언급, 갑작스러운 단절 — 이런 신호가 보이면 절대 혼자 감당하려 하지 마세요.',
+        '교사의 역할은 「치료」가 아니라 「연결」입니다. 즉시 담당 교역자에게 알리고, 필요하면 전문가의 도움을 받도록 다리를 놓아주세요.'
+      ]}
+    ],
+    mind: '변화를 보이는 아이 앞에서 교사가 할 가장 큰 일은 「곁에 있어 주는 것」입니다. 답을 주지 못해도 괜찮습니다. 다만 혼자 두지 마세요.'
+  },
+  {
+    icon: '😤', title: '반항하거나 삐딱해요', sub: '신앙에 냉소적인 아이',
+    blocks: [
+      { label: '먼저, 이렇게 볼 수 있어요', type: 'ul', items: [
+        '냉소는 종종 「상처」나 「실망」의 다른 얼굴입니다. 신앙에 진지했던 아이일수록 더 날카로워질 수 있습니다.',
+        '권위에 대한 반항은 청소년기의 자연스러운 일면이기도 합니다 — 자기 생각을 세우려는 과정입니다.',
+        '"왜요?"라는 질문은 거부가 아니라, 진짜 답을 찾고 싶다는 갈망일 수 있습니다.'
+      ]},
+      { label: '다가가는 한 걸음', type: 'ul', items: [
+        '냉소에 방어적으로 반응하지 마세요. 논쟁에서 이기려 하면 아이는 더 멀어집니다.',
+        '"그렇게 생각할 수도 있겠다. 왜 그렇게 느꼈는지 더 듣고 싶어" — 먼저 그 마음을 진지하게 받아주세요.',
+        '의심과 질문을 환영해주세요. 좋은 신앙은 질문을 통과해 더 단단해집니다.',
+        '답을 다 주려 하지 말고, 함께 고민해주세요. 아이가 원하는 건 정답이 아니라 「진지하게 들어주는 어른」일 때가 많습니다.'
+      ]},
+      { label: '선생님의 결을 살려서', type: 'p', items: [
+        '원칙을 중시하는 선생님이라면: "그건 틀렸다"고 바로 교정하고 싶겠지만, 잠시 멈추고 아이의 질문 뒤에 있는 마음을 먼저 들어주세요.',
+        '다정한 선생님이라면: 그 따뜻함이 큰 힘입니다. 다만 냉소에 상처받지 말고, 그것이 아이의 본심이 아닐 수 있음을 기억하세요.'
+      ]}
+    ],
+    mind: '삐딱한 아이를 「믿음 없는 아이」로 규정하지 마세요. 진지하게 씨름하는 중일 수 있습니다. 그 씨름을 함께 견뎌주는 어른이 되어주세요.'
+  },
+  {
+    icon: '⭐', title: '인정받고 싶어 해요', sub: '관심을 강하게 원하는 아이',
+    blocks: [
+      { label: '먼저, 이렇게 볼 수 있어요', type: 'ul', items: [
+        '관심을 원하는 것은 잘못이 아닙니다. 모든 사람은 사랑받고 싶어 합니다.',
+        '과하게 드러내려 한다면, 어딘가에서 충분히 채워지지 못한 마음이 있을 수 있습니다.',
+        '칭찬에 민감한 아이는, 동시에 거절과 비교에도 깊이 상처받을 수 있습니다.'
+      ]},
+      { label: '다가가는 한 걸음', type: 'ul', items: [
+        '「행동」을 잘했을 때만 칭찬하면, 아이는 인정받기 위해 더 애쓰게 됩니다. 행동이 아니라 「존재」를 인정해주세요. ("네가 우리 반에 있어서 좋아")',
+        '관심을 두고 다른 아이와 경쟁하지 않도록, 꾸준하고 잔잔한 관심을 주세요. 가끔 크게보다 늘 조금씩.',
+        '하나님이 「행위와 상관없이」 사랑하신다는 복음을, 이 아이는 특별히 더 들어야 합니다.'
+      ]},
+      { label: '선생님의 결을 살려서', type: 'p', items: [
+        '활기찬 선생님이라면: 큰 리액션이 이 아이를 기쁘게 하지만, 그것에만 의존하지 않도록 조용한 인정도 함께 주세요.',
+        '차분한 선생님이라면: 표현이 작아도 진심은 전해집니다. 짧지만 분명한 한 마디를 자주 건네주세요.'
+      ]}
+    ],
+    mind: '관심을 원하는 아이를 함부로 규정하지 마세요. 그 아이에게 필요한 건 더 큰 무대가 아니라, 조건 없이 사랑받는 경험입니다.'
+  },
+  {
+    icon: '📵', title: '신앙에 무관심해요', sub: '교회를 마지못해 오는 듯한 아이',
+    blocks: [
+      { label: '먼저, 이렇게 볼 수 있어요', type: 'ul', items: [
+        '부모님 손에 이끌려 온 아이일 수 있습니다 — 신앙이 아직 「자기 것」이 되지 않았을 뿐입니다.',
+        '무관심처럼 보여도, 마음 한구석에는 「진짜인지 알고 싶다」는 물음이 있을 수 있습니다.',
+        '교회에서 의미 있는 관계나 경험을 아직 만나지 못한 것일 수도 있습니다.'
+      ]},
+      { label: '다가가는 한 걸음', type: 'ul', items: [
+        '신앙을 강요하거나 죄책감을 주지 마세요. 떠밀린 신앙은 오래가지 못합니다.',
+        '먼저 「사람」으로 친해지세요. 그 아이의 관심사, 일상을 물어봐 주세요. 관계가 신앙의 통로가 됩니다.',
+        '교회가 「와도 괜찮은 곳, 나를 반겨주는 곳」이 되게 해주세요. 좋은 경험이 쌓이면 마음이 열립니다.',
+        '조급해하지 마세요. 신앙은 우리가 만드는 것이 아니라, 하나님이 자라게 하시는 것입니다.'
+      ]},
+      { label: '선생님의 결을 살려서', type: 'p', items: [
+        '원칙을 중시하는 선생님이라면: "믿어야 한다"는 당위로 다가가기보다, 한 사람으로서 먼저 곁에 있어 주세요.',
+        '다정한 선생님이라면: 그 환대가 이 아이에게 교회의 첫인상이 됩니다. 꾸준히, 부담 없이 반겨주세요.'
+      ]}
+    ],
+    mind: '무관심해 보이는 아이를 「믿음 없는 아이」로 규정하지 마세요. 씨앗은 땅속에서 보이지 않게 자랍니다. 우리는 심고 물 줄 뿐, 자라게 하시는 분은 하나님이십니다.'
+  }
+];
+
+// ============================================
+// 렌더링
+// ============================================
+function renderGrid(cases, gridId, onPick) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = cases.map((c, i) => `
+    <button class="case-card" data-idx="${i}">
+      <div class="cc-icon">${c.icon}</div>
+      <div class="cc-title">${c.title}</div>
+      <div class="cc-sub">${c.sub}</div>
+    </button>`).join('');
+  grid.querySelectorAll('.case-card').forEach(card => {
+    card.addEventListener('click', () => {
+      grid.querySelectorAll('.case-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      onPick(parseInt(card.dataset.idx));
+    });
+  });
+}
+
+function renderResult(c, prefix) {
+  document.getElementById(prefix + '-title').textContent = c.title;
+  const body = document.getElementById(prefix + '-body');
+  body.innerHTML = c.blocks.map((b, i) => {
+    let inner = '';
+    if (b.type === 'ul') {
+      inner = '<ul>' + b.items.map(it => `<li>${it}</li>`).join('') + '</ul>';
+    } else {
+      inner = b.items.map(it => `<p>${it}</p>`).join('');
+    }
+    return `
+      <div class="block">
+        <div class="block-label"><span class="num">${i + 1}</span>${b.label}</div>
+        ${inner}
+      </div>`;
+  }).join('');
+  document.getElementById(prefix + '-mind').innerHTML =
+    '<b>마음에 새길 것</b><br>' + c.mind;
+}
+
+renderGrid(LESSON_CASES, 'lesson-grid', (idx) => {
+  renderResult(LESSON_CASES[idx], 'lr');
+  document.getElementById('lesson-result').classList.add('show');
+  document.getElementById('lesson-ph').style.display = 'none';
+  document.getElementById('lesson-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+renderGrid(CHILD_CASES, 'child-grid', (idx) => {
+  renderResult(CHILD_CASES[idx], 'cr');
+  document.getElementById('child-result').classList.add('show');
+  document.getElementById('child-ph').style.display = 'none';
+  document.getElementById('child-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+  });
+});
+
+</script>
+</body>
+</html>
